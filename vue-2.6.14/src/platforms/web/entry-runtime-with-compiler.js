@@ -18,6 +18,7 @@ const idToTemplate = cached((id) => {
 });
 
 const mount = Vue.prototype.$mount;
+// 确定模板，生成render函数
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
@@ -35,6 +36,7 @@ Vue.prototype.$mount = function (
 
   const options = this.$options;
   // resolve template/el and convert to render function
+  // 优先级 render > template > el
   if (!options.render) {
     let template = options.template;
     if (template) {
@@ -65,7 +67,7 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== "production" && config.performance && mark) {
         mark("compile");
       }
-
+      // 获取render函数
       const { render, staticRenderFns } = compileToFunctions(
         template,
         {

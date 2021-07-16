@@ -35,6 +35,10 @@ export function initMixin(Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options);
     } else {
+      // 合并components,directives,filters选项到用户选项
+      // 规范化props，如props.key不是原始对象则转成对象{type:null}
+      // 规范化inject，如inject.key不是原始对象则转成对象{from:inject.key(真正provide的key)}
+      // 规范化directives，如果指令是一个函数，则转成对象，bind：fn,update：fn
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -49,13 +53,21 @@ export function initMixin(Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm;
+    // 初始化$parent,$root,$children,$refs
     initLifecycle(vm);
+    // 初始化自定义事件，子组件派发，子组件执行
     initEvents(vm);
+    // 初始化$slots，实例上挂载_c及$createElement方法。响应式$attrs、$listeners
     initRender(vm);
+    // 执行beforeCreate钩子
     callHook(vm, "beforeCreate");
+    // 初始化inject选项，向父辈遍历，找到inject.key.from对应的字段在父辈_provide中的值，代理到vm，没有响应式
     initInjections(vm); // resolve injections before data/props
+    // 初始化状态 props、methods、data、computed、watch
     initState(vm);
+    // 把provide定义到vm._provide上，如果是函数执行之
     initProvide(vm); // resolve provide after data/props
+    // 执行created钩子
     callHook(vm, "created");
 
     /* istanbul ignore if */

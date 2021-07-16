@@ -98,7 +98,7 @@ export function parse(
   postTransforms = pluckModuleFunction(options.modules, "postTransformNode");
 
   delimiters = options.delimiters;
-
+  // 编译过程中,碰到开始标签,存入ast,碰到结束标签弹出ast
   const stack = [];
   const preserveWhitespace = options.preserveWhitespace !== false;
   const whitespaceOption = options.whitespace;
@@ -123,6 +123,7 @@ export function parse(
     // tree management
     if (!stack.length && element !== root) {
       // allow root elements with v-if, v-else-if and v-else
+      // v-if, v-else-if and v-else指令
       if (root.if && (element.elseif || element.else)) {
         if (process.env.NODE_ENV !== "production") {
           checkRootConstraints(element);

@@ -49,14 +49,23 @@ export function proxy(target: Object, sourceKey: string, key: string) {
 export function initState(vm: Component) {
   vm._watchers = [];
   const opts = vm.$options;
+  // props响应式（根组件）及代理（不在vm上的key）
   if (opts.props) initProps(vm, opts.props);
+  // 判重，props上已经定义的key不能在methods中重复，把methodKey定义到vm上，并绑定this为vm
   if (opts.methods) initMethods(vm, opts.methods);
+  // 判重，props和methods上定义的数据不能出现在data上
+  // 代理到vm上
+  // 设置响应式
   if (opts.data) {
     initData(vm);
   } else {
     observe((vm._data = {}), true /* asRootData */);
   }
+  // 遍历computed，new一个watcher把computed方法传入，默认lazy:true
+  // 把computed定义到vm上
+  // 判重
   if (opts.computed) initComputed(vm, opts.computed);
+  // 遍历watch，new一个watcher，传入key和handler，返回取消watch函数
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch);
   }

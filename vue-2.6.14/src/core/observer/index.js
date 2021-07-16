@@ -204,7 +204,7 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(
-      `Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`
+      `Cannot set reactive property on undefined, null, or primitive value: ${target}`
     );
   }
   if (Array.isArray(target) && isValidArrayIndex(key)) {
@@ -216,7 +216,7 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
     target[key] = val;
     return val;
   }
-  const ob = (target: any).__ob__;
+  const ob = target.__ob__;
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== "production" &&
       warn(
@@ -243,14 +243,14 @@ export function del(target: Array<any> | Object, key: any) {
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(
-      `Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`
+      `Cannot delete reactive property on undefined, null, or primitive value: ${target}`
     );
   }
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1);
     return;
   }
-  const ob = (target: any).__ob__;
+  const ob = target.__ob__;
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== "production" &&
       warn(

@@ -52,11 +52,12 @@ export function createCompileToFunctionFn(compile: Function): Function {
     const key = options.delimiters
       ? String(options.delimiters) + template
       : template;
+    // 有缓存直接返回编译结果
     if (cache[key]) {
       return cache[key];
     }
 
-    // compile
+    // 编译模板
     const compiled = compile(template, options);
 
     // check compilation errors/tips

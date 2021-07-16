@@ -13,9 +13,13 @@ function Vue(options) {
 }
 // Vue原型上挂载_init方法
 initMixin(Vue);
+// Vue原型上挂载$set、$delete、$watch
 stateMixin(Vue);
+// Vue原型上挂载$on、$once、$off、$emit
 eventsMixin(Vue);
+// Vue原型上挂载_update、$forceUpdate、$destroy
 lifecycleMixin(Vue);
+// Vue原型上挂载$nextTick、_render
 renderMixin(Vue);
 
 export default Vue;

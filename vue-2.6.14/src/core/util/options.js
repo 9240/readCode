@@ -394,7 +394,7 @@ export function mergeOptions(
   if (typeof child === "function") {
     child = child.options;
   }
-
+  // 选项标准化处理
   normalizeProps(child, vm);
   normalizeInject(child, vm);
   normalizeDirectives(child);

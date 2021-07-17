@@ -69,6 +69,9 @@ export function initState(vm: Component) {
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch);
   }
+  // computed 和 watch 有什么区别？
+  // 1. computed默认懒执行，切不可更改，但watcher可配置
+  // 2. 使用场景不同computed同步操作，watch可以异步操作
 }
 
 function initProps(vm: Component, propsOptions: Object) {
@@ -261,6 +264,10 @@ function createComputedGetter(key) {
   return function computedGetter() {
     const watcher = this._computedWatchers && this._computedWatchers[key];
     if (watcher) {
+      // 执行computed.key的值（函数）得到函数的执行结果，赋值给watcher.value
+      // 将watcher.dirty置为false
+      // 一次渲染当中，只执行一次computed函数，后续的访问就不会再执行了，直到下一次更新，才会再执行
+      // dirty：执行evalutate计算computed结果，并把dirty置为false，执行run方法，把dirty置为true
       if (watcher.dirty) {
         watcher.evaluate();
       }

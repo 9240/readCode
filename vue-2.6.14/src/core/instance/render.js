@@ -89,12 +89,17 @@ export function renderMixin(Vue: Class<Component>) {
   Vue.prototype.$nextTick = function (fn: Function) {
     return nextTick(fn, this);
   };
-
+  /**
+   * 执行组件的render函数得到vnode
+   * @returns
+   */
   Vue.prototype._render = function (): VNode {
     const vm: Component = this;
+    // 获取render函数
     const { render, _parentVnode } = vm.$options;
 
     if (_parentVnode) {
+      // 标准化插槽
       vm.$scopedSlots = normalizeScopedSlots(
         _parentVnode.data.scopedSlots,
         vm.$slots,
@@ -112,6 +117,7 @@ export function renderMixin(Vue: Class<Component>) {
       // separately from one another. Nested component's render fns are called
       // when parent component is patched.
       currentRenderingInstance = vm;
+      // 执行render函数，得到组件的vnode
       vnode = render.call(vm._renderProxy, vm.$createElement);
     } catch (e) {
       handleError(e, vm, `render`);
@@ -140,6 +146,7 @@ export function renderMixin(Vue: Class<Component>) {
       vnode = vnode[0];
     }
     // return empty vnode in case the render function errored out
+    // 多根节点错误提示
     if (!(vnode instanceof VNode)) {
       if (process.env.NODE_ENV !== "production" && Array.isArray(vnode)) {
         warn(

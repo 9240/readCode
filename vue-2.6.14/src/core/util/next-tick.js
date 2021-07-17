@@ -9,7 +9,13 @@ export let isUsingMicroTask = false;
 
 const callbacks = [];
 let pending = false;
-
+/**
+ * 1.将pending再次置为false,表示下一个flushCallbacks函数可以进入浏览器异步任务队列
+ * 2.清空callbacks数组
+ * 3.执行callbacks数组中的所有函数
+ *      flushSchedulerQueue
+ *      用户自己调用this.$nextTick传递的回调函数
+ */
 function flushCallbacks() {
   pending = false;
   const copies = callbacks.slice(0);
@@ -88,6 +94,8 @@ if (typeof Promise !== "undefined" && isNative(Promise)) {
 
 export function nextTick(cb?: Function, ctx?: Object) {
   let _resolve;
+  // 将nextTick的回调函数用try catch包装一层,方便异常捕获
+  // 然后将包装后的函数放到callbacks数组中
   callbacks.push(() => {
     if (cb) {
       try {
@@ -100,6 +108,7 @@ export function nextTick(cb?: Function, ctx?: Object) {
     }
   });
   if (!pending) {
+    // pending == false 执行timerFunc()
     pending = true;
     timerFunc();
   }

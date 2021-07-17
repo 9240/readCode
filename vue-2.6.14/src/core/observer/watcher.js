@@ -52,6 +52,7 @@ export default class Watcher {
   ) {
     this.vm = vm;
     if (isRenderWatcher) {
+      // 把渲染watcher放到vm._watcher
       vm._watcher = this;
     }
     vm._watchers.push(this);
@@ -102,6 +103,10 @@ export default class Watcher {
     let value;
     const vm = this.vm;
     try {
+      // 执行实例化watcher时传递的第二个参数
+      // 有可能时函数,比如渲染watcher的updateComponent
+      // 用户watcher可能传递一个key,如watch:{"a.b":{}}的a.b,再由parsePath方法转化成function
+      // 触发读取操作,被getter拦截,进行依赖收集
       value = this.getter.call(vm, vm);
     } catch (e) {
       if (this.user) {
@@ -112,6 +117,7 @@ export default class Watcher {
     } finally {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
+      // 用户watcher深度检测
       if (this.deep) {
         traverse(value);
       }
@@ -126,10 +132,13 @@ export default class Watcher {
    */
   addDep(dep: Dep) {
     const id = dep.id;
+    // 避免重复收集
     if (!this.newDepIds.has(id)) {
+      // 将dep放到watcher中
       this.newDepIds.add(id);
       this.newDeps.push(dep);
       if (!this.depIds.has(id)) {
+        // 将watcher放到dep中
         dep.addSub(this);
       }
     }
@@ -163,10 +172,17 @@ export default class Watcher {
   update() {
     /* istanbul ignore else */
     if (this.lazy) {
+      // 懒执行，比如computed
+      // 将dirty置为true，在组件更新之后，当响应式数据再次被更新时，执行computed getter
+      // 重新执行computed回调函数，计算新之，然后缓存到watcher.value
       this.dirty = true;
     } else if (this.sync) {
+      // 同步执行
+      // 比如 this.$watch()、watche选项 传递一个sync配置比如{sync: true}
+      // 直接执行run方法，不会放到watcher队列
       this.run();
     } else {
+      // 将当前watcher放入watcher队列，一般都是走这个分支
       queueWatcher(this);
     }
   }

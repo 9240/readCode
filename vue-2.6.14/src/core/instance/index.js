@@ -19,7 +19,7 @@ stateMixin(Vue);
 eventsMixin(Vue);
 // Vue原型上挂载_update、$forceUpdate、$destroy
 lifecycleMixin(Vue);
-// Vue原型上挂载$nextTick、_render
+// Vue原型上挂载$nextTick、_render、renderHelp
 renderMixin(Vue);
 
 export default Vue;

@@ -45,6 +45,9 @@ export class Observer {
     this.vmCount = 0;
     def(value, "__ob__", this);
     if (Array.isArray(value)) {
+      // 数组响应式
+      // 判断是否有__proto__属性
+      // obj.__proto__访问对象的原型链
       if (hasProto) {
         protoAugment(value, arrayMethods);
       } else {
@@ -52,6 +55,7 @@ export class Observer {
       }
       this.observeArray(value);
     } else {
+      // 对象响应式
       this.walk(value);
     }
   }
@@ -106,6 +110,7 @@ function copyAugment(target: Object, src: Object, keys: Array<string>) {
  * Attempt to create an observer instance for a value,
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
+ * 响应式处理入口
  */
 export function observe(value: any, asRootData: ?boolean): Observer | void {
   if (!isObject(value) || value instanceof VNode) {
@@ -121,6 +126,7 @@ export function observe(value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
+    // 实例化observer进行响应式处理
     ob = new Observer(value);
   }
   if (asRootData && ob) {
@@ -139,8 +145,9 @@ export function defineReactive(
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  // 实例化一个dep，一个key对应一个dep
   const dep = new Dep();
-
+  // 获取属性描述符
   const property = Object.getOwnPropertyDescriptor(obj, key);
   if (property && property.configurable === false) {
     return;
@@ -152,16 +159,21 @@ export function defineReactive(
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key];
   }
-
+  // 通过递归的方式处理val为对象的情况
   let childOb = !shallow && observe(val);
+  // 拦截obj.key的get和set
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
     get: function reactiveGetter() {
       const value = getter ? getter.call(obj) : val;
       if (Dep.target) {
+        // 依赖收集
+        // 将dep放到watcher中
+        // 将watcher放到dep中
         dep.depend();
         if (childOb) {
+          // 对嵌套对象也进行收集
           childOb.dep.depend();
           if (Array.isArray(value)) {
             dependArray(value);
@@ -187,6 +199,7 @@ export function defineReactive(
       } else {
         val = newVal;
       }
+      // 对
       childOb = !shallow && observe(newVal);
       dep.notify();
     },
@@ -207,7 +220,9 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
       `Cannot set reactive property on undefined, null, or primitive value: ${target}`
     );
   }
+  // 处理数组set,Vue.set(arr,idx,val)
   if (Array.isArray(target) && isValidArrayIndex(key)) {
+    // 数组的length取length和key的最大值
     target.length = Math.max(target.length, key);
     target.splice(key, 1, val);
     return val;
@@ -229,7 +244,9 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
     target[key] = val;
     return val;
   }
+  // 对新属性设置getter和setter,读取时收集依赖,更新时触发依赖通知更新
   defineReactive(ob.value, key, val);
+  // 通知更新
   ob.dep.notify();
   return val;
 }
@@ -246,6 +263,7 @@ export function del(target: Array<any> | Object, key: any) {
       `Cannot delete reactive property on undefined, null, or primitive value: ${target}`
     );
   }
+  // 数组用splice方法删除
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1);
     return;
@@ -262,10 +280,12 @@ export function del(target: Array<any> | Object, key: any) {
   if (!hasOwn(target, key)) {
     return;
   }
+  // 对象用delete操作符删除
   delete target[key];
   if (!ob) {
     return;
   }
+  // 通知更新
   ob.dep.notify();
 }
 

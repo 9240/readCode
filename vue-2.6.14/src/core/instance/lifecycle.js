@@ -65,10 +65,10 @@ export function lifecycleMixin(Vue: Class<Component>) {
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
     if (!prevVnode) {
-      // initial render
+      // 初次渲染
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */);
     } else {
-      // updates
+      // 更新
       vm.$el = vm.__patch__(prevVnode, vnode);
     }
     restoreActiveInstance();
@@ -86,10 +86,11 @@ export function lifecycleMixin(Vue: Class<Component>) {
     // updated hook is called by the scheduler to ensure that children are
     // updated in a parent's updated hook.
   };
-
+  // 执行渲染watcher的update方法
   Vue.prototype.$forceUpdate = function () {
     const vm: Component = this;
     if (vm._watcher) {
+      // 执行渲染watcher的update方法
       vm._watcher.update();
     }
   };
@@ -102,14 +103,17 @@ export function lifecycleMixin(Vue: Class<Component>) {
     callHook(vm, "beforeDestroy");
     vm._isBeingDestroyed = true;
     // remove self from parent
+    // 从父组件中移除自己
     const parent = vm.$parent;
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm);
     }
     // teardown watchers
+    // 移除自身渲染watcher
     if (vm._watcher) {
       vm._watcher.teardown();
     }
+    // 移除所有watcher
     let i = vm._watchers.length;
     while (i--) {
       vm._watchers[i].teardown();
@@ -122,10 +126,12 @@ export function lifecycleMixin(Vue: Class<Component>) {
     // call the last hook...
     vm._isDestroyed = true;
     // invoke destroy hooks on current rendered tree
+    // 移除dom
     vm.__patch__(vm._vnode, null);
     // fire destroyed hook
     callHook(vm, "destroyed");
     // turn off all instance listeners.
+    // 移除所有事件监听器
     vm.$off();
     // remove __vue__ reference
     if (vm.$el) {
@@ -192,6 +198,7 @@ export function mountComponent(
     };
   } else {
     updateComponent = () => {
+      // 执行_update,进入更新阶段,首先执行_render,将组件变成VNode
       vm._update(vm._render(), hydrating);
     };
   }

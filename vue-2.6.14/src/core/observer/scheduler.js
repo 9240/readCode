@@ -64,6 +64,7 @@ if (inBrowser && !isIE) {
  */
 function flushSchedulerQueue() {
   currentFlushTimestamp = getNow();
+  // flushing置为true,表示watcher队列正在刷新
   flushing = true;
   let watcher, id;
 
@@ -75,15 +76,23 @@ function flushSchedulerQueue() {
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
+
+  // 排序的原因(上面的注释):
+  // 1.组件的更新是从父到子(因为父组件在子组件之前创建)
+  // 2.用户watcher先于渲染watcher执行(因为用户watcher先于渲染watcher创建)
+  // 3.父组件watcher执行期间,子组件被销毁了,可以跳过子组件的watcher
   queue.sort((a, b) => a.id - b.id);
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  // 遍历watcher队列,执行run方法
+  // 不缓存queue.length,因为执行期间可能放入新的watcher
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index];
     if (watcher.before) {
       watcher.before();
     }
+    // 清空缓存,当前watcher已被执行,可以再次入队
     id = watcher.id;
     has[id] = null;
     watcher.run();
@@ -156,13 +165,17 @@ function callActivatedHooks(queue) {
  */
 export function queueWatcher(watcher: Watcher) {
   const id = watcher.id;
+  // 判重，watcher不会重复入队
+  // 在一个组件渲染周期内，一个响应式数据被多次更新，只会入队一次
   if (has[id] == null) {
     has[id] = true;
     if (!flushing) {
+      // flushing == false,表示当前watcher队列没有在刷新,watcher直接入队
       queue.push(watcher);
     } else {
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
+      // watcher队列在被刷新,倒序遍历,把当前watcher放到合适的位置,保证watcher有序
       let i = queue.length - 1;
       while (i > index && queue[i].id > watcher.id) {
         i--;
@@ -171,9 +184,12 @@ export function queueWatcher(watcher: Watcher) {
     }
     // queue the flush
     if (!waiting) {
+      // waiting == false,表示当前浏览器的异步任务队列中没有flushScheulerQueue函数
       waiting = true;
 
       if (process.env.NODE_ENV !== "production" && !config.async) {
+        // 同步执行,直接去刷新watcher队列
+        // 性能大打折扣
         flushSchedulerQueue();
         return;
       }

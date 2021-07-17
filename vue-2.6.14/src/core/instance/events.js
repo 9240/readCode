@@ -58,19 +58,24 @@ export function updateComponentListeners(
 
 export function eventsMixin(Vue: Class<Component>) {
   const hookRE = /^hook:/;
+  // 将所有的事件和对应的回调放到vm._events对象上，{event1:[cb1,cb2],event2:[cb3]}
   Vue.prototype.$on = function (
     event: string | Array<string>,
     fn: Function
   ): Component {
+    // this.$on('custom-event',function(){})
     const vm: Component = this;
     if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$on(event[i], fn);
       }
     } else {
+      // 一个custom-event监听多个事件
+      // vm._events['custom-event'] = [cb1,cb2]
       (vm._events[event] || (vm._events[event] = [])).push(fn);
       // optimize hook:event cost by using a boolean flag marked at registration
       // instead of a hash lookup
+      // <comp @hook:mounted = "handle" />
       if (hookRE.test(event)) {
         vm._hasHookEvent = true;
       }
@@ -78,8 +83,16 @@ export function eventsMixin(Vue: Class<Component>) {
     return vm;
   };
 
+  /**
+   * $once通过$on和$off组合实现
+   * 触发时先取消监听再执行回调函数
+   * @param {*} event
+   * @param {*} fn
+   * @returns
+   */
   Vue.prototype.$once = function (event: string, fn: Function): Component {
     const vm: Component = this;
+    // 包装回调函数
     function on() {
       vm.$off(event, on);
       fn.apply(vm, arguments);
@@ -88,13 +101,21 @@ export function eventsMixin(Vue: Class<Component>) {
     vm.$on(event, on);
     return vm;
   };
-
+  /**
+   * 通过vm._event对象上指定event（key）的指定回调fn
+   * 1.没有提供参数：将vm._events对象置空
+   * 2.一个参数：移除该event对应的所有fn
+   * 3.两个参数：移除指定event的指定回调fn
+   * @param {*} event
+   * @param {*} fn
+   * @returns
+   */
   Vue.prototype.$off = function (
     event?: string | Array<string>,
     fn?: Function
   ): Component {
     const vm: Component = this;
-    // all
+    // 置空vm._events
     if (!arguments.length) {
       vm._events = Object.create(null);
       return vm;
@@ -106,16 +127,17 @@ export function eventsMixin(Vue: Class<Component>) {
       }
       return vm;
     }
-    // specific event
+    // 获取指定事件的回调函数
     const cbs = vm._events[event];
     if (!cbs) {
       return vm;
     }
+    // 移除该event对应的所有事件
     if (!fn) {
       vm._events[event] = null;
       return vm;
     }
-    // specific handler
+    // 移除指定事件的指定回调函数
     let cb;
     let i = cbs.length;
     while (i--) {
@@ -127,7 +149,12 @@ export function eventsMixin(Vue: Class<Component>) {
     }
     return vm;
   };
-
+  /**
+   * 在vm._events上拿到event对应的回调函数数组
+   * 获取第一个以外的参数，依次调用
+   * @param {*} event
+   * @returns
+   */
   Vue.prototype.$emit = function (event: string): Component {
     const vm: Component = this;
     if (process.env.NODE_ENV !== "production") {
@@ -149,6 +176,7 @@ export function eventsMixin(Vue: Class<Component>) {
     let cbs = vm._events[event];
     if (cbs) {
       cbs = cbs.length > 1 ? toArray(cbs) : cbs;
+      // 获取$emit第一个以外的参数
       const args = toArray(arguments, 1);
       const info = `event handler for "${event}"`;
       for (let i = 0, l = cbs.length; i < l; i++) {

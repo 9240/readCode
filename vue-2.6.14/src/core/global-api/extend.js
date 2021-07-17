@@ -3,7 +3,7 @@
 import { ASSET_TYPES } from "shared/constants";
 import { defineComputed, proxy } from "../instance/state";
 import { extend, mergeOptions, validateComponentName } from "../util/index";
-
+// 定义extend方法
 export function initExtend(Vue: GlobalAPI) {
   /**
    * Each instance constructor, including Vue, has a unique
@@ -15,24 +15,28 @@ export function initExtend(Vue: GlobalAPI) {
 
   /**
    * Class inheritance
+   * 利用基础Vue构造器,创建一个"子类"
+   * 扩展Vue子类,预设一些配置项
    */
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {};
     const Super = this;
     const SuperId = Super.cid;
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {});
+    // 用同一个配置项多次调用Vue.extend,第二次调用使用缓存
     if (cachedCtors[SuperId]) {
       return cachedCtors[SuperId];
     }
-
+    // 验证组件名称
     const name = extendOptions.name || Super.options.name;
     if (process.env.NODE_ENV !== "production" && name) {
       validateComponentName(name);
     }
-
+    // 定义一个Vue子类
     const Sub = function VueComponent(options) {
       this._init(options);
     };
+    // 设置子类原型对象
     Sub.prototype = Object.create(Super.prototype);
     Sub.prototype.constructor = Sub;
     Sub.cid = cid++;
@@ -50,6 +54,7 @@ export function initExtend(Vue: GlobalAPI) {
     }
 
     // allow further extension/mixin/plugin usage
+    // 全局方法放到子类
     Sub.extend = Super.extend;
     Sub.mixin = Super.mixin;
     Sub.use = Super.use;
@@ -57,10 +62,12 @@ export function initExtend(Vue: GlobalAPI) {
     // create asset registers, so extended classes
     // can have their private assets too.
     ASSET_TYPES.forEach(function (type) {
+      // 子类全局配置对象,components,directives,filters
       Sub[type] = Super[type];
     });
     // enable recursive self-lookup
     if (name) {
+      // 组件自身调用原理
       Sub.options.components[name] = Sub;
     }
 

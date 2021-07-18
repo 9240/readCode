@@ -76,6 +76,7 @@ export function eventsMixin(Vue: Class<Component>) {
       // optimize hook:event cost by using a boolean flag marked at registration
       // instead of a hash lookup
       // <comp @hook:mounted = "handle" />
+      // vm._events['hook:mounted'] = [handle]
       if (hookRE.test(event)) {
         vm._hasHookEvent = true;
       }

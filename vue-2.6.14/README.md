@@ -37,3 +37,11 @@
   2.3 callHook(vm, "mounted") 执行mounted钩子
 # 异步更新
 见统计目录picture/update.jpg
+
+# 父子组件
+1. 父组件beforeCreate、created、beforeMount
+2. new Watcher()，构造函数执行updateComponent，进而执行_render函数创建VNode（保留标签和自定义组件）、执行_update=>__patch__=>createElm（真实节点，真实节点挂在VNode的elm上）
+3. 子组件执行init(),子组件beforeCreate、created、beforeMount
+4. new Watcher()，构造函数执行updateComponent，进而执行_render函数创建VNode（保留标签和自定义组件）、执行_update=>__patch__=>createElm（真实节点，真实节点挂在VNode的elm上）
+5. 把子组件的真实节点插入父组件的真实节点，把父组件的真实节点插入页面，删除模板，执行子组件mounted
+6. 执行父组件mounted

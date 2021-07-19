@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <keep-alive>
+          <comp1 />
+        </keep-alive>
+      </div>
+    </div>
+  </body>
+</html>
+<script src="../dist/vue.js"></script>
+<script>
+  // Vue.component("comp", {
+  //   template: `<div>123</div>`,
+  // });
+  const vm = new Vue({
+    el: "#app",
+    components: {
+      comp1: {
+        template: `<h2>comp1</h2>`,
+        beforeCreate() {
+          console.log("child beforeCreate");
+        },
+        created() {
+          console.log("child created");
+        },
+        beforeMount() {
+          console.log("child beforeMount");
+        },
+        mounted() {
+          console.log("child mounted");
+        },
+      },
+    },
+    beforeCreate() {
+      console.log("parent beforeCreate");
+    },
+    created() {
+      console.log("parent created");
+    },
+    beforeMount() {
+      console.log("parent beforeMount");
+    },
+    mounted() {
+      console.log("parent mounted");
+    },
+  });
+  // 父组件render函数
+  // (function anonymous() {
+  //   with (this) {
+  //     return _c("div", { attrs: { id: "app" } }, [_c("comp")], 1);
+  //   }
+  // });
+  (function anonymous() {
+    with (this) {
+      return _c("div", { attrs: { id: "app" } }, [
+        _c("div", [_c("keep-alive", [_c("comp1")], 1)], 1),
+      ]);
+    }
+  });
+  // 子组件render函数
+  // (function anonymous() {
+  //   with (this) {
+  //     return _c("h2", [_v("123")]);
+  //   }
+  // });
+</script>

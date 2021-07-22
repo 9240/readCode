@@ -8,11 +8,7 @@
   </head>
   <body>
     <div id="app">
-      <div>
-        <keep-alive>
-          <comp1 />
-        </keep-alive>
-      </div>
+      <comp1 />
     </div>
   </body>
 </html>
@@ -59,13 +55,6 @@
   //     return _c("div", { attrs: { id: "app" } }, [_c("comp")], 1);
   //   }
   // });
-  (function anonymous() {
-    with (this) {
-      return _c("div", { attrs: { id: "app" } }, [
-        _c("div", [_c("keep-alive", [_c("comp1")], 1)], 1),
-      ]);
-    }
-  });
   // 子组件render函数
   // (function anonymous() {
   //   with (this) {

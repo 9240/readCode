@@ -10,6 +10,7 @@
     <div id="app">
       <h2 class="h">{{a}}</h2>
       <button @click="changeA">change</button>
+      {{ arr }}
     </div>
     <!-- with(this){return _c('div',{attrs:{"id":"app"}},[_c('h2',[_v(_s(a.b))]),_v(" "),_c('button',{on:{"click":changeA}},[_v("change")])])} -->
   </body>
@@ -35,17 +36,33 @@
     data() {
       return {
         a: 1,
+        arr: [{ name: "zhangsan" }, 2, 3],
       };
+    },
+    mounted() {
+      setTimeout(() => {
+        this.arr[0] = 100;
+      }, 2000);
+      // setTimeout(() => {
+      //   this.a = 100;
+      // }, 4000);
     },
     methods: {
       changeA() {
         this.a++;
-        this.$nextTick(() => {
-          console.log(document.querySelector("h2").innerHTML);
-        });
+        // this.$nextTick(() => {
+        //   console.log(document.querySelector("h2").innerHTML);
+        // });
       },
     },
+    beforeUpdate() {
+      console.log(1);
+    },
+    updated() {
+      console.log(2);
+    },
   });
+  console.log(vm);
   // setTimeout(() => {
   //   vm.$set(vm.a, "c", 1);
   // }, 1000);

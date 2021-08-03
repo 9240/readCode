@@ -1,3 +1,9 @@
+# 简版生命周期
+1. 初始化阶段：初始化父子关系，初始化自定义事件，初始化插槽相关，beforeCreate，初始化injections，初始化状态，初始化provide，created
+2. 挂载阶段：确认render函数（render函数>template编译>el的outhtml作为模板编译），beforeMount，接着申明updateComponent作为参数传入到渲染watcher实例，在渲染watcher的constructor里面执行updateComponent,这个函数先执行_render函数，得到VNode，并且在此时进行依赖收集，得到VNode之后执行_update函数，得到真实DOM，插入到页面，删除页面上的模板，mounted
+3. 更新阶段：dep.notif()
+4. 销毁阶段：beforeDestory，从父组件中移除自己，移除watcher，移除DOM，destory，移除事件监听
+
 # 初始化阶段执行_init
 1. 合并选项（根组件）
   1.1 规范化props 如：props[key] = {type:null}、props[key] = {type:Number}、props[key] = {type:xxx,...}

@@ -4,7 +4,6 @@
 **/*.log
 **/explorations
 **/TODOs.md
-**/dist
 **/test/e2e/reports
 **/test/e2e/screenshots
 **/coverage
@@ -16,3 +15,11 @@
 **/packages/vue-template-compiler/build.js
 **/.vscode
 **/.history
+vue-3.2.26/dist/**
+vue-3.2.26/.DS_Store/**
+vue-3.2.26/coverage
+vue-3.2.26/temp
+vue-3.2.26/explorations
+vue-3.2.26/TODOs.md
+vue-3.2.26/*.log
+vue-3.2.26/.idea

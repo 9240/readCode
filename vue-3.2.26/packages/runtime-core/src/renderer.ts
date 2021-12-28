@@ -287,6 +287,7 @@ export const queuePostRenderEffect = __FEATURE_SUSPENSE__
  * })
  * ```
  */
+// 创建渲染器的入口
 export function createRenderer<
   HostNode = RendererNode,
   HostElement = RendererElement
@@ -316,6 +317,12 @@ function baseCreateRenderer(
 ): HydrationRenderer
 
 // implementation
+/**
+ * 创建渲染器的实现
+ * @param options 节点操作的方法及属性的patch
+ * @param createHydrationFns ssr相关
+ * @returns
+ */
 function baseCreateRenderer(
   options: RendererOptions,
   createHydrationFns?: typeof createHydrationFunctions
@@ -324,13 +331,14 @@ function baseCreateRenderer(
   if (__ESM_BUNDLER__ && !__TEST__) {
     initFeatureFlags()
   }
-
+  //   获取this
   const target = getGlobalThis()
+  //   标识vue app
   target.__VUE__ = true
   if (__DEV__ || __FEATURE_PROD_DEVTOOLS__) {
     setDevtoolsHook(target.__VUE_DEVTOOLS_GLOBAL_HOOK__, target)
   }
-
+  //   重命名节点操作的方法
   const {
     insert: hostInsert,
     remove: hostRemove,
@@ -349,6 +357,7 @@ function baseCreateRenderer(
 
   // Note: functions inside this closure should use `const xxx = () => {}`
   // style in order to prevent being inlined by minifiers.
+  //   patch方法的入口
   const patch: PatchFn = (
     n1,
     n2,
@@ -465,7 +474,7 @@ function baseCreateRenderer(
       setRef(ref, n1 && n1.ref, parentSuspense, n2 || n1, !n2)
     }
   }
-
+  //   处理text
   const processText: ProcessTextOrCommentFn = (n1, n2, container, anchor) => {
     if (n1 == null) {
       hostInsert(
@@ -480,7 +489,7 @@ function baseCreateRenderer(
       }
     }
   }
-
+  // 处理注释节点
   const processCommentNode: ProcessTextOrCommentFn = (
     n1,
     n2,
@@ -498,7 +507,7 @@ function baseCreateRenderer(
       n2.el = n1.el
     }
   }
-
+  // 挂载静态节点
   const mountStaticNode = (
     n2: VNode,
     container: RendererElement,
@@ -565,7 +574,7 @@ function baseCreateRenderer(
     }
     hostRemove(anchor!)
   }
-
+  // 处理Element
   const processElement = (
     n1: VNode | null,
     n2: VNode,
@@ -601,7 +610,7 @@ function baseCreateRenderer(
       )
     }
   }
-
+  // 挂载Element
   const mountElement = (
     vnode: VNode,
     container: RendererElement,
@@ -763,7 +772,7 @@ function baseCreateRenderer(
       }
     }
   }
-
+  // 挂载Children
   const mountChildren: MountChildrenFn = (
     children,
     container,
@@ -792,7 +801,7 @@ function baseCreateRenderer(
       )
     }
   }
-
+  // patchElement
   const patchElement = (
     n1: VNode,
     n2: VNode,
@@ -990,7 +999,7 @@ function baseCreateRenderer(
       )
     }
   }
-
+  // 更新属性
   const patchProps = (
     el: RendererElement,
     vnode: VNode,
@@ -1043,7 +1052,7 @@ function baseCreateRenderer(
       }
     }
   }
-
+  // 处理Fragment
   const processFragment = (
     n1: VNode | null,
     n2: VNode,
@@ -1141,7 +1150,7 @@ function baseCreateRenderer(
       }
     }
   }
-
+  // 处理组件
   const processComponent = (
     n1: VNode | null,
     n2: VNode,
@@ -1178,7 +1187,7 @@ function baseCreateRenderer(
       updateComponent(n1, n2, optimized)
     }
   }
-
+  // 挂载组件
   const mountComponent: MountComponentFn = (
     initialVNode,
     container,
@@ -1254,7 +1263,7 @@ function baseCreateRenderer(
       endMeasure(instance, `mount`)
     }
   }
-
+  // 更新组件
   const updateComponent = (n1: VNode, n2: VNode, optimized: boolean) => {
     const instance = (n2.component = n1.component)!
     if (shouldUpdateComponent(n1, n2, optimized)) {
@@ -1289,7 +1298,7 @@ function baseCreateRenderer(
       instance.vnode = n2
     }
   }
-
+  // 渲染Effect
   const setupRenderEffect: SetupRenderEffectFn = (
     instance,
     initialVNode,
@@ -2295,19 +2304,32 @@ function baseCreateRenderer(
     }
     return hostNextSibling((vnode.anchor || vnode.el)!)
   }
-
+  /**
+   * 返回的render方法
+   * @param vnode 新vnode
+   * @param container 挂载的容器
+   * @param isSVG
+   */
   const render: RootRenderFunction = (vnode, container, isSVG) => {
     if (vnode == null) {
+      // 新节点为空，上次节点不为，空卸载
       if (container._vnode) {
         unmount(container._vnode, null, null, true)
       }
     } else {
+      /**
+       * container._vnode || null  旧节点
+       * vnode  新节点
+       * container  挂载容器
+       */
       patch(container._vnode || null, vnode, container, null, null, null, isSVG)
     }
+    // 执行任务队列
     flushPostFlushCbs()
+    // 把此次的新节点保存在_vnode上作为下一次的旧节点
     container._vnode = vnode
   }
-
+  // 方法重命名
   const internals: RendererInternals = {
     p: patch,
     um: unmount,
@@ -2320,7 +2342,7 @@ function baseCreateRenderer(
     n: getNextHostNode,
     o: options
   }
-
+  // ssr标识
   let hydrate: ReturnType<typeof createHydrationFunctions>[0] | undefined
   let hydrateNode: ReturnType<typeof createHydrationFunctions>[1] | undefined
   if (createHydrationFns) {

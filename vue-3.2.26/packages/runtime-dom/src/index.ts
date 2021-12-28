@@ -31,6 +31,10 @@ declare module '@vue/reactivity' {
   }
 }
 
+/**
+ * patchProp：属性的patch
+ * nodeOps：节点操作的方法
+ */
 const rendererOptions = extend({ patchProp }, nodeOps)
 
 // lazy create the renderer - this makes core renderer logic tree-shakable
@@ -39,6 +43,12 @@ let renderer: Renderer<Element | ShadowRoot> | HydrationRenderer
 
 let enabledHydration = false
 
+/**
+ * 确保返回一个渲染器（有就直接返回renderer没有就创建一个renderer并保存）
+ * rendererOptions 节点操作的方法及属性的patch方法
+ * @returns renderer
+ */
+
 function ensureRenderer() {
   return (
     renderer ||
@@ -46,6 +56,7 @@ function ensureRenderer() {
   )
 }
 
+// ssr的renderer
 function ensureHydrationRenderer() {
   renderer = enabledHydration
     ? renderer
@@ -63,16 +74,19 @@ export const hydrate = ((...args) => {
   ensureHydrationRenderer().hydrate(...args)
 }) as RootHydrateFunction
 
+// 创建App入口
 export const createApp = ((...args) => {
+  // 调用渲染器的createApp方法得到app实例
   const app = ensureRenderer().createApp(...args)
 
   if (__DEV__) {
     injectNativeTagCheck(app)
     injectCompilerOptionsCheck(app)
   }
-
+  // 针对web平台扩展mount方法
   const { mount } = app
   app.mount = (containerOrSelector: Element | ShadowRoot | string): any => {
+    // 获取挂载容器
     const container = normalizeContainer(containerOrSelector)
     if (!container) return
 
@@ -82,6 +96,8 @@ export const createApp = ((...args) => {
       // Reason: potential execution of JS expressions in in-DOM template.
       // The user must make sure the in-DOM template is trusted. If it's
       // rendered by the server, the template should not contain any user data.
+      // 不是函数组件  组件没有render函数  组件没有template
+      // 取容器的innerHTML作为template
       component.template = container.innerHTML
       // 2.x compat check
       if (__COMPAT__ && __DEV__) {
@@ -99,7 +115,9 @@ export const createApp = ((...args) => {
     }
 
     // clear content before mounting
+    // 挂载前清空容器
     container.innerHTML = ''
+    // 执行通用的挂载方法
     const proxy = mount(container, false, container instanceof SVGElement)
     if (container instanceof Element) {
       container.removeAttribute('v-cloak')

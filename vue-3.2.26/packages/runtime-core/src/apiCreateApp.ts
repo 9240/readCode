@@ -173,11 +173,21 @@ export type CreateAppFunction<HostElement> = (
 ) => App<HostElement>
 
 let uid = 0
-
+/**
+ *
+ * @param render render方法
+ * @param hydrate
+ * @returns
+ */
 export function createAppAPI<HostElement>(
   render: RootRenderFunction,
   hydrate?: RootHydrateFunction
 ): CreateAppFunction<HostElement> {
+  /**
+   * 用户真正调用的createApp
+   * rootComponent：用户传入的跟组件的配置对象
+   * rootProps：根组件的属性对象
+   */
   return function createApp(rootComponent, rootProps = null) {
     if (rootProps != null && !isObject(rootProps)) {
       __DEV__ && warn(`root props passed to app.mount() must be an object.`)
@@ -185,10 +195,11 @@ export function createAppAPI<HostElement>(
     }
 
     const context = createAppContext()
+    // 安装的插件集合
     const installedPlugins = new Set()
-
+    // 挂载标识
     let isMounted = false
-
+    // 构造app对象
     const app: App = (context.app = {
       _uid: uid++,
       _component: rootComponent as ConcreteComponent,
@@ -210,14 +221,21 @@ export function createAppAPI<HostElement>(
           )
         }
       },
-
+      /**
+       * use方法 app作为插件的第一个参数注入
+       * @param plugin 插件方法或对象（含install方法）
+       * @param options 插件参数
+       * @returns app
+       */
       use(plugin: Plugin, ...options: any[]) {
         if (installedPlugins.has(plugin)) {
           __DEV__ && warn(`Plugin has already been applied to target app.`)
         } else if (plugin && isFunction(plugin.install)) {
+          // 对象式插件，注入app
           installedPlugins.add(plugin)
           plugin.install(app, ...options)
         } else if (isFunction(plugin)) {
+          // 函数式插件，注入app
           installedPlugins.add(plugin)
           plugin(app, ...options)
         } else if (__DEV__) {
@@ -228,9 +246,10 @@ export function createAppAPI<HostElement>(
         }
         return app
       },
-
+      // context.mixins：收集mixin
       mixin(mixin: ComponentOptions) {
         if (__FEATURE_OPTIONS_API__) {
+          // options_api支持mixin
           if (!context.mixins.includes(mixin)) {
             context.mixins.push(mixin)
           } else if (__DEV__) {
@@ -244,42 +263,59 @@ export function createAppAPI<HostElement>(
         }
         return app
       },
-
+      /**
+       * 注册/获取组件
+       * @param name 组件名
+       * @param component 组件对象
+       * @returns app｜component
+       */
       component(name: string, component?: Component): any {
         if (__DEV__) {
           validateComponentName(name, context.config)
         }
         if (!component) {
+          // 一个参数，返回组件
           return context.components[name]
         }
+        // 注册同名组件警告
         if (__DEV__ && context.components[name]) {
           warn(`Component "${name}" has already been registered in target app.`)
         }
+        // 注册组件
         context.components[name] = component
         return app
       },
-
+      /**
+       * 注册/获取指令
+       * @param name 指令名
+       * @param directive 指令对象
+       * @returns app｜directive
+       */
       directive(name: string, directive?: Directive) {
         if (__DEV__) {
           validateDirectiveName(name)
         }
 
         if (!directive) {
+          // 一个参数，返回指令
           return context.directives[name] as any
         }
+        // 注册同名指令警告
         if (__DEV__ && context.directives[name]) {
           warn(`Directive "${name}" has already been registered in target app.`)
         }
+        // 注册指令
         context.directives[name] = directive
         return app
       },
-
+      // 平台无关的mount方法
       mount(
         rootContainer: HostElement,
         isHydrate?: boolean,
         isSVG?: boolean
       ): any {
         if (!isMounted) {
+          // 创建根组件的vnode
           const vnode = createVNode(
             rootComponent as ConcreteComponent,
             rootProps
@@ -298,8 +334,13 @@ export function createAppAPI<HostElement>(
           if (isHydrate && hydrate) {
             hydrate(vnode as VNode<Node, Element>, rootContainer as any)
           } else {
+            /**
+             * packages/runtime-core/src/renderer.ts的render方法
+             * createAppAPI传入
+             */
             render(vnode, rootContainer, isSVG)
           }
+          // 挂载完成
           isMounted = true
           app._container = rootContainer
           // for devtools and telemetry
@@ -320,9 +361,10 @@ export function createAppAPI<HostElement>(
           )
         }
       },
-
+      // 卸载
       unmount() {
         if (isMounted) {
+          // 清空dom及app
           render(null, app._container)
           if (__DEV__ || __FEATURE_PROD_DEVTOOLS__) {
             app._instance = null

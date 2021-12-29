@@ -1232,6 +1232,7 @@ function baseCreateRenderer(
       if (__DEV__) {
         startMeasure(instance, `init`)
       }
+      // 安装组件确定render函数
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)

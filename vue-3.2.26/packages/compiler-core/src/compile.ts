@@ -81,7 +81,7 @@ export function baseCompile(
   if (options.scopeId && !isModuleMode) {
     onError(createCompilerError(ErrorCodes.X_SCOPE_ID_NOT_SUPPORTED))
   }
-
+  // 模板解析
   const ast = isString(template) ? baseParse(template, options) : template
   const [nodeTransforms, directiveTransforms] =
     getBaseTransformPreset(prefixIdentifiers)
@@ -92,7 +92,7 @@ export function baseCompile(
       options.expressionPlugins = [...(expressionPlugins || []), 'typescript']
     }
   }
-
+  // ast转换
   transform(
     ast,
     extend({}, options, {
@@ -108,7 +108,7 @@ export function baseCompile(
       )
     })
   )
-
+  // 生成字符串代码
   return generate(
     ast,
     extend({}, options, {

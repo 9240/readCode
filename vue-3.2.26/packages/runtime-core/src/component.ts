@@ -590,7 +590,9 @@ export function setupComponent(
 
   const { props, children } = instance.vnode
   const isStateful = isStatefulComponent(instance)
+  // 初始化props
   initProps(instance, props, isStateful, isSSR)
+  // 初始化slots
   initSlots(instance, children)
 
   const setupResult = isStateful
@@ -646,6 +648,7 @@ function setupStatefulComponent(
 
     setCurrentInstance(instance)
     pauseTracking()
+    // 得到setup中返回的render函数
     const setupResult = callWithErrorHandling(
       setup,
       instance,
@@ -697,6 +700,7 @@ export function handleSetupResult(
       // set it as ssrRender instead.
       instance.ssrRender = setupResult
     } else {
+      // 绑定setup中返回的render函数到当前组件实例
       instance.render = setupResult as InternalRenderFunction
     }
   } else if (isObject(setupResult)) {
@@ -729,13 +733,14 @@ type CompileFunction = (
   template: string | object,
   options?: CompilerOptions
 ) => InternalRenderFunction
-
+// compile函数
 let compile: CompileFunction | undefined
 let installWithProxy: (i: ComponentInternalInstance) => void
 
 /**
  * For runtime-dom to register the compiler.
  * Note the exported method uses any to avoid d.ts relying on the compiler types.
+ * 运行时注册编译函数
  */
 export function registerRuntimeCompiler(_compile: any) {
   compile = _compile
@@ -770,6 +775,7 @@ export function finishComponentSetup(
     // only do on-the-fly compile if not in SSR - SSR on-the-fly compilation
     // is done by server-renderer
     if (!isSSR && compile && !Component.render) {
+      // 获取模板
       const template =
         (__COMPAT__ &&
           instance.vnode.props &&
@@ -799,13 +805,14 @@ export function finishComponentSetup(
             extend(finalCompilerOptions.compatConfig, Component.compatConfig)
           }
         }
+        // 模板编译得到render函数
         Component.render = compile(template, finalCompilerOptions)
         if (__DEV__) {
           endMeasure(instance, `compile`)
         }
       }
     }
-
+    // 用户直接提供的render函数
     instance.render = (Component.render || NOOP) as InternalRenderFunction
 
     // for runtime-compiled render functions using `with` blocks, the render

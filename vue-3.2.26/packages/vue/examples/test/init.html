@@ -12,10 +12,17 @@
 </html>
 <script src="../../dist/vue.global.js"></script>
 <script>
-  const { createApp, mount } = Vue
-  //   debugger
+  const { createApp, mount, h } = Vue
+  debugger
+  // render优先级 setup > template编译 > render
   const app = createApp({
-    template: '<div>123</div>'
+    // template: '<div>123</div>',
+    setup() {
+      //return () => h('h1', null, 'world')
+    }
+    // render() {
+    //   return h('h1', null, 'hello')
+    // }
   })
   app.mount('#app')
 </script>

@@ -27,11 +27,12 @@ function compileToFunction(
   }
 
   const key = template
+  // 有缓存的编译模板直接返回
   const cached = compileCache[key]
   if (cached) {
     return cached
   }
-
+  // id选择器
   if (template[0] === '#') {
     const el = document.querySelector(template)
     if (__DEV__ && !el) {
@@ -43,7 +44,7 @@ function compileToFunction(
     // by the server, the template should not contain any user data.
     template = el ? el.innerHTML : ``
   }
-
+  // 编译模板
   const { code } = compile(
     template,
     extend(

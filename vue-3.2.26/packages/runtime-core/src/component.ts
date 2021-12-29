@@ -453,6 +453,7 @@ export function createComponentInstance(
 ) {
   const type = vnode.type as ConcreteComponent
   // inherit parent app context - or - if root, adopt from root vnode
+  // 继承父组件上下文
   const appContext =
     (parent ? parent.appContext : vnode.appContext) || emptyAppContext
 
@@ -473,7 +474,7 @@ export function createComponentInstance(
     exposed: null,
     exposeProxy: null,
     withProxy: null,
-    provides: parent ? parent.provides : Object.create(appContext.provides),
+    provides: parent ? parent.provides : Object.create(appContext.provides), // 获取父组件的provides
     accessCache: null!,
     renderCache: [],
 
@@ -536,7 +537,9 @@ export function createComponentInstance(
   } else {
     instance.ctx = { _: instance }
   }
+  // 根组件
   instance.root = parent ? parent.root : instance
+  // 绑定emit的this及第一个参数
   instance.emit = emit.bind(null, instance)
 
   // apply custom element special handling

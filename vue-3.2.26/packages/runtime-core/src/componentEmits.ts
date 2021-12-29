@@ -68,11 +68,19 @@ export type EmitFn<
       }[Event]
     >
 
+/**
+ *
+ * @param instance 组件实例
+ * @param event 事件名
+ * @param rawArgs 参数数组
+ * @returns
+ */
 export function emit(
   instance: ComponentInternalInstance,
   event: string,
   ...rawArgs: any[]
 ) {
+  // 获取当前组件接收到的props
   const props = instance.vnode.props || EMPTY_OBJ
 
   if (__DEV__) {
@@ -110,9 +118,12 @@ export function emit(
   }
 
   let args = rawArgs
+  // 组件上的v-model相当于 modelValue 属性及 update:modelValue 事件
+  // 判断是否是 update:modelValue 事件
   const isModelListener = event.startsWith('update:')
 
   // for v-model update:xxx events, apply modifiers on args
+  // 获取 v-model 事件名
   const modelArg = isModelListener && event.slice(7)
   if (modelArg && modelArg in props) {
     const modifiersKey = `${
@@ -145,7 +156,7 @@ export function emit(
       )
     }
   }
-
+  // 从props中取emit事件名对应的函数（事件名的命名规范）
   let handlerName
   let handler =
     props[(handlerName = toHandlerKey(event))] ||
@@ -158,6 +169,7 @@ export function emit(
   }
 
   if (handler) {
+    // 包装handler
     callWithAsyncErrorHandling(
       handler,
       instance,
@@ -165,14 +177,16 @@ export function emit(
       args
     )
   }
-
+  // 只执行一次的自定义事件
   const onceHandler = props[handlerName + `Once`]
   if (onceHandler) {
     if (!instance.emitted) {
       instance.emitted = {} as Record<any, boolean>
     } else if (instance.emitted[handlerName]) {
+      // 该handlerName对应的事件已执行一次，直接返回
       return
     }
+    // 标记该handlerName已执行过
     instance.emitted[handlerName] = true
     callWithAsyncErrorHandling(
       onceHandler,

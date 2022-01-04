@@ -19,6 +19,9 @@ export function provide<T>(key: InjectionKey<T> | string | number, value: T) {
     // parent and let the prototype chain do the work.
     const parentProvides =
       currentInstance.parent && currentInstance.parent.provides
+    // 组件实例化时，provides 赋值为父组件的 provides
+    // 第一次进来 parentProvides === provides，创建基于 parentProvides 为原型的对象赋值给 provides
+    // 有重复的key，inject取值时，取的是距离自己最近的父级的 provides
     if (parentProvides === provides) {
       provides = currentInstance.provides = Object.create(parentProvides)
     }
@@ -50,6 +53,7 @@ export function inject(
     // #2400
     // to support `app.use` plugins,
     // fallback to appContext's `provides` if the intance is at root
+    // 取父组件的provides
     const provides =
       instance.parent == null
         ? instance.vnode.appContext && instance.vnode.appContext.provides
